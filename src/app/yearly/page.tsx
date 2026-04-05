@@ -8,7 +8,7 @@ import BarChart from '@/components/ui/BarChart'
 import { apiFetch, YearlySummary, MonthEntry } from '@/lib/api'
 
 function fmt(n: number) {
-  return '$' + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 0 })
+  return '€' + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 0 })
 }
 
 function fmtPct(n: number | null): string {

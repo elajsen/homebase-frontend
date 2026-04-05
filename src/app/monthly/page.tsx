@@ -13,11 +13,11 @@ import {
 } from '@/lib/api'
 
 function fmt(n: number) {
-  return '$' + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 0 })
+  return '€' + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 0 })
 }
 
 function fmtFull(n: number) {
-  return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return '€' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function parseDate(iso: string) {
@@ -204,7 +204,7 @@ function MonthlyPageInner() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
                   <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>+ Expected</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                    <span style={{ fontFamily: 'var(--font-lexend, Lexend, sans-serif)', fontSize: 13, fontWeight: 600, color: 'var(--warning)' }}>$</span>
+                    <span style={{ fontFamily: 'var(--font-lexend, Lexend, sans-serif)', fontSize: 13, fontWeight: 600, color: 'var(--warning)' }}>€</span>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -276,7 +276,7 @@ function MonthlyPageInner() {
           {/* Savings goal (editable) */}
           <SummaryCard variant="amber" label={<>Savings Goal <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-disabled)', letterSpacing: 0 }}>(editable)</span></>}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-              <span style={{ fontFamily: 'var(--font-lexend, Lexend, sans-serif)', fontSize: 22, fontWeight: 600, color: 'var(--warning)' }}>$</span>
+              <span style={{ fontFamily: 'var(--font-lexend, Lexend, sans-serif)', fontSize: 22, fontWeight: 600, color: 'var(--warning)' }}>€</span>
               <input
                 type="number"
                 value={savingsInput}

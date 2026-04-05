@@ -13,6 +13,7 @@ import {
   BudgetCategory,
   SavingsGoal,
   RecentTransaction,
+  BillsResponse,
 } from '@/lib/api'
 
 type Period = 'week' | 'month' | 'year'
@@ -30,7 +31,7 @@ function greetingTime() {
 }
 
 function fmt(n: number) {
-  return '$' + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 0 })
+  return '€' + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 0 })
 }
 
 function fmtPct(n: number) {
@@ -49,8 +50,25 @@ export default function HomePage() {
   const [categories, setCategories]     = useState<BudgetCategory[]>([])
   const [savingsGoal, setSavingsGoal]   = useState<SavingsGoal | null>(null)
   const [transactions, setTransactions] = useState<RecentTransaction[]>([])
+  const [bills, setBills]               = useState<BillsResponse | null>(null)
   const [period, setPeriod]             = useState<Period>('month')
   const [loading, setLoading]           = useState(true)
+  const [expectedIncome, setExpectedIncome] = useState('')
+  const [includeBills, setIncludeBills]     = useState(false)
+
+  // Sync localStorage values set in the monthly page
+  useEffect(() => {
+    const storedExpected = localStorage.getItem('clarity_expected_income')
+    if (storedExpected) setExpectedIncome(storedExpected)
+    const storedBills = localStorage.getItem('clarity_include_bills')
+    if (storedBills) setIncludeBills(storedBills === 'true')
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'clarity_expected_income') setExpectedIncome(e.newValue ?? '')
+      if (e.key === 'clarity_include_bills') setIncludeBills(e.newValue === 'true')
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
   useEffect(() => {
     Promise.all([
@@ -58,11 +76,13 @@ export default function HomePage() {
       apiFetch<BudgetCategory[]>(`/v1/home/budget_categories?date=${date}`),
       apiFetch<SavingsGoal>(`/v1/home/savings_goal?date=${date}`),
       apiFetch<RecentTransaction[]>(`/v1/home/recent_transactions?date=${date}&limit=10`),
-    ]).then(([s, cats, sg, txs]) => {
+      apiFetch<BillsResponse>(`/v1/monthly/bills?date=${date}`),
+    ]).then(([s, cats, sg, txs, b]) => {
       setSummary(s)
       setCategories(cats)
       setSavingsGoal(sg)
       setTransactions(txs)
+      setBills(b)
       setLoading(false)
     }).catch(console.error)
   }, [date])
@@ -87,6 +107,11 @@ export default function HomePage() {
       console.error(e)
     }
   }
+
+  const expectedVal = parseFloat(expectedIncome) || 0
+  const billsAdj = includeBills ? (bills?.total_upcoming ?? 0) : 0
+  const displayIncome = (summary?.income ?? 0) + expectedVal
+  const displaySpending = (summary?.spending ?? 0) + billsAdj
 
   const vp = summary?.vs_previous_month
 
@@ -136,7 +161,7 @@ export default function HomePage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 22 }}>
           <KpiCard
             label="Total Income"
-            value={summary ? fmt(summary.income) : '—'}
+            value={summary ? fmt(displayIncome) : '—'}
             valueColor="var(--positive)"
             variant="green"
             delta={vp ? `↑ ${Math.abs(vp.income_pct)}% vs ${vp.label}` : undefined}
@@ -144,7 +169,7 @@ export default function HomePage() {
           />
           <KpiCard
             label="Total Spending"
-            value={summary ? fmt(summary.spending) : '—'}
+            value={summary ? fmt(displaySpending) : '—'}
             valueColor="var(--negative)"
             variant="red"
             delta={vp ? `↑ ${Math.abs(vp.spending_pct)}% vs ${vp.label}` : undefined}
