@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clarity — Yearly Snapshot</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0B1120; --surface-1: #131D2E; --surface-2: #192134; --surface-3: #1E2A42;
+  --text-primary: #F1F5F9; --text-secondary: #CBD5E1; --text-muted: #94A3B8; --text-disabled: #475569;
+  --blue: #3B82F6; --blue-dim: rgba(59,130,246,0.12); --blue-border: rgba(59,130,246,0.28);
+  --positive: #10B981; --positive-dim: rgba(16,185,129,0.12); --positive-border: rgba(16,185,129,0.22);
+  --negative: #F87171; --negative-dim: rgba(248,113,113,0.12); --negative-border: rgba(248,113,113,0.22);
+  --warning: #F59E0B; --warning-dim: rgba(245,158,11,0.12);
+  --border: rgba(255,255,255,0.07); --border-strong: rgba(255,255,255,0.13);
+  --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 18px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family:'Source Sans 3',sans-serif; background:var(--bg); color:var(--text-primary); min-height:100vh; -webkit-font-smoothing:antialiased; }
+nav {
+  position:sticky; top:0; z-index:50;
+  background:rgba(19,29,46,0.92); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border); height:58px;
+  display:flex; align-items:center; justify-content:space-between; padding:0 40px;
+}
+.nav-brand { font-family:'Lexend',sans-serif; font-size:17px; font-weight:600;
+  background:linear-gradient(135deg,#93C5FD,#3B82F6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.nav-links { display:flex; gap:2px; }
+.nav-links a { font-size:14px; font-weight:500; color:var(--text-muted); text-decoration:none; padding:6px 16px; border-radius:var(--r-sm); transition:all 0.15s; }
+.nav-links a:hover { color:var(--text-primary); background:var(--surface-2); }
+.nav-links a.active { color:var(--blue); background:var(--blue-dim); }
+.nav-right { display:flex; align-items:center; gap:12px; }
+.nav-date { font-size:12px; color:var(--text-disabled); }
+.nav-avatar { width:32px; height:32px; border-radius:10px; background:linear-gradient(135deg,#1E40AF,#3B82F6); display:flex; align-items:center; justify-content:center; font-family:'Lexend',sans-serif; font-size:12px; font-weight:600; color:#fff; }
+.page { max-width:1100px; margin:0 auto; padding:32px 32px 64px; }
+
+/* PAGE HEADER */
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; }
+.year-nav { display:flex; align-items:center; gap:16px; }
+.year-nav-btn { width:34px; height:34px; border-radius:var(--r-md); border:1px solid var(--border-strong); background:var(--surface-2); color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; transition:all 0.15s; }
+.year-nav-btn:hover { color:var(--text-primary); background:var(--surface-3); }
+.year-title { font-family:'Lexend',sans-serif; font-size:26px; font-weight:600; letter-spacing:-0.02em; }
+.year-sub { font-size:13px; color:var(--text-muted); margin-top:2px; }
+
+/* YTD KPI CARDS */
+.ytd-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+.ytd-card {
+  background:var(--surface-1); border:1px solid var(--border); border-radius:var(--r-xl);
+  padding:24px 26px; position:relative; overflow:hidden;
+}
+.ytd-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; border-radius:var(--r-xl) var(--r-xl) 0 0; }
+.ytd-card.green::before { background:linear-gradient(90deg,var(--positive),transparent); }
+.ytd-card.red::before   { background:linear-gradient(90deg,var(--negative),transparent); }
+.ytd-card.blue::before  { background:linear-gradient(90deg,var(--blue),transparent); }
+.ytd-label { font-size:11px; font-weight:600; color:var(--text-muted); letter-spacing:0.07em; text-transform:uppercase; margin-bottom:10px; }
+.ytd-value { font-family:'Lexend',sans-serif; font-size:32px; font-weight:600; letter-spacing:-0.03em; font-variant-numeric:tabular-nums; margin-bottom:8px; }
+.ytd-sub { font-size:13px; color:var(--text-muted); }
+.ytd-trend { display:flex; align-items:center; gap:10px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border); }
+.ytd-spark { flex:1; height:24px; }
+.ytd-rate { font-size:12px; font-weight:600; padding:2px 8px; border-radius:20px; }
+.ytd-rate.up   { background:var(--positive-dim); color:var(--positive); }
+.ytd-rate.down { background:var(--negative-dim); color:var(--negative); }
+
+/* CHART CARD */
+.chart-card { background:var(--surface-1); border:1px solid var(--border); border-radius:var(--r-xl); padding:24px; margin-bottom:24px; }
+.chart-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
+.chart-title { font-family:'Lexend',sans-serif; font-size:15px; font-weight:600; color:var(--text-primary); }
+.chart-sub { font-size:13px; color:var(--text-muted); margin-top:2px; }
+.chart-legend { display:flex; gap:18px; }
+.legend-item { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text-muted); }
+.legend-sq { width:10px; height:10px; border-radius:3px; }
+
+/* BAR CHART */
+.bar-chart-area {
+  display:flex; align-items:flex-end; gap:6px;
+  padding:0 0 4px 36px; height:140px; position:relative;
+}
+.y-axis {
+  position:absolute; left:0; top:0; bottom:24px;
+  display:flex; flex-direction:column; justify-content:space-between;
+  width:32px;
+}
+.y-label { font-size:10px; color:var(--text-disabled); text-align:right; }
+.bar-group { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; }
+.bar-pairs { display:flex; gap:2px; align-items:flex-end; flex:1; width:100%; }
+.bar { border-radius:3px 3px 0 0; cursor:pointer; transition:opacity 0.15s; }
+.bar:hover { opacity:0.8; }
+.bar.income  { background:var(--positive); }
+.bar.spend   { background:var(--negative); opacity:0.75; }
+.bar.future  { background:var(--surface-3); opacity:1; cursor:default; }
+.bar-month-label { font-size:10px; color:var(--text-disabled); }
+.bar-month-label.current { color:var(--blue); font-weight:600; }
+.chart-grid-lines {
+  position:absolute; left:36px; right:0; top:0; bottom:24px; pointer-events:none;
+}
+
+/* MONTH TABLE */
+.table-card { background:var(--surface-1); border:1px solid var(--border); border-radius:var(--r-xl); overflow:hidden; }
+.table-header-row {
+  padding:16px 24px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.table-title { font-family:'Lexend',sans-serif; font-size:15px; font-weight:600; }
+.table-actions { display:flex; gap:8px; }
+table { width:100%; border-collapse:collapse; }
+thead th {
+  padding:12px 24px; font-size:11px; font-weight:600; color:var(--text-muted);
+  letter-spacing:0.07em; text-transform:uppercase; text-align:left;
+  border-bottom:1px solid var(--border); background:var(--surface-2);
+}
+thead th:not(:first-child) { text-align:right; }
+tbody tr { border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.12s; }
+tbody tr:last-child { border-bottom:none; }
+tbody tr:hover td { background:var(--surface-2); }
+tbody tr.current-month td { background:rgba(59,130,246,0.04); }
+tbody tr.current-month td:first-child { position:relative; }
+tbody tr.current-month td:first-child::before {
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--blue);
+}
+tbody tr.future-month { opacity:0.45; cursor:default; }
+tbody tr.future-month:hover td { background:transparent; }
+tbody td { padding:13px 24px; font-size:14px; }
+tbody td:not(:first-child) { text-align:right; font-family:'Lexend',sans-serif; font-size:14px; font-weight:500; font-variant-numeric:tabular-nums; }
+.month-cell { display:flex; align-items:center; gap:10px; }
+.month-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.month-name { font-size:14px; font-weight:500; color:var(--text-primary); }
+.month-badge { font-size:10px; font-weight:600; padding:2px 7px; border-radius:20px; background:var(--blue-dim); color:var(--blue); }
+/* Profit pill */
+.profit-pill {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:13px; font-weight:600; padding:3px 10px; border-radius:20px;
+  font-variant-numeric:tabular-nums;
+}
+.profit-pill.great { background:rgba(16,185,129,0.15); color:var(--positive); border:1px solid var(--positive-border); }
+.profit-pill.good  { background:rgba(16,185,129,0.08); color:var(--positive); border:1px solid rgba(16,185,129,0.15); }
+.profit-pill.loss  { background:var(--negative-dim); color:var(--negative); border:1px solid var(--negative-border); }
+.profit-pill.none  { background:rgba(148,163,184,0.08); color:var(--text-muted); border:1px solid var(--border); }
+/* Table totals */
+tfoot tr { border-top:2px solid var(--border-strong); background:var(--surface-2); }
+tfoot td { padding:14px 24px; font-size:14px; font-weight:600; font-family:'Lexend',sans-serif; font-variant-numeric:tabular-nums; }
+tfoot td:not(:first-child) { text-align:right; font-size:15px; }
+
+/* BTN */
+.btn { display:inline-flex; align-items:center; gap:6px; font-family:'Lexend',sans-serif; font-size:13px; font-weight:500; border:none; border-radius:var(--r-md); padding:8px 16px; cursor:pointer; }
+.btn-ghost { background:var(--surface-2); color:var(--text-secondary); border:1px solid var(--border-strong); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">Clarity</div>
+  <div class="nav-links">
+    <a href="home.html">Home</a>
+    <a href="monthly.html">Monthly</a>
+    <a href="yearly.html" class="active">Yearly</a>
+  </div>
+  <div class="nav-right">
+    <span class="nav-date">April 4, 2026</span>
+    <div class="nav-avatar">JD</div>
+  </div>
+</nav>
+
+<main class="page">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="year-nav">
+      <button class="year-nav-btn">←</button>
+      <div>
+        <div class="year-title">2026</div>
+        <div class="year-sub">Yearly snapshot · January – April (YTD)</div>
+      </div>
+      <button class="year-nav-btn" style="opacity:0.3;cursor:default">→</button>
+    </div>
+    <button class="btn btn-ghost">Export CSV</button>
+  </div>
+
+  <!-- YTD KPI CARDS -->
+  <div class="ytd-grid">
+
+    <div class="ytd-card green">
+      <div class="ytd-label">Total Income YTD</div>
+      <div class="ytd-value" style="color:var(--positive)">$20,400</div>
+      <div class="ytd-sub">Avg $5,100 / month</div>
+      <div class="ytd-trend">
+        <svg class="ytd-spark" viewBox="0 0 120 24" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="ytd-ig" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#10B981" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#10B981" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <polygon points="0,24 0,16 30,14 60,12 90,8 120,4 120,24" fill="url(#ytd-ig)"/>
+          <polyline points="0,16 30,14 60,12 90,8 120,4" fill="none" stroke="#10B981" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="120" cy="4" r="2.5" fill="#10B981" stroke="#131D2E" stroke-width="1.5"/>
+        </svg>
+        <span class="ytd-rate up">↑ 12.5% YoY</span>
+      </div>
+    </div>
+
+    <div class="ytd-card red">
+      <div class="ytd-label">Total Spending YTD</div>
+      <div class="ytd-value" style="color:var(--negative)">$12,641</div>
+      <div class="ytd-sub">Avg $3,160 / month</div>
+      <div class="ytd-trend">
+        <svg class="ytd-spark" viewBox="0 0 120 24" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="ytd-sg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#F87171" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#F87171" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <polygon points="0,24 0,10 30,14 60,8 90,12 120,10 120,24" fill="url(#ytd-sg)"/>
+          <polyline points="0,10 30,14 60,8 90,12 120,10" fill="none" stroke="#F87171" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="120" cy="10" r="2.5" fill="#F87171" stroke="#131D2E" stroke-width="1.5"/>
+        </svg>
+        <span class="ytd-rate down">↑ 5.8% YoY</span>
+      </div>
+    </div>
+
+    <div class="ytd-card blue">
+      <div class="ytd-label">Net Profit YTD</div>
+      <div class="ytd-value" style="color:var(--blue)">$7,759</div>
+      <div class="ytd-sub">Avg $1,940 / month · Rate 38%</div>
+      <div class="ytd-trend">
+        <svg class="ytd-spark" viewBox="0 0 120 24" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="ytd-ng" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#3B82F6" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <polygon points="0,24 0,14 30,16 60,10 90,6 120,5 120,24" fill="url(#ytd-ng)"/>
+          <polyline points="0,14 30,16 60,10 90,6 120,5" fill="none" stroke="#3B82F6" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="120" cy="5" r="2.5" fill="#3B82F6" stroke="#131D2E" stroke-width="1.5"/>
+        </svg>
+        <span class="ytd-rate up">↑ 24% YoY</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHART CARD -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Monthly Overview — 2026</div>
+        <div class="chart-sub">Income and Spending by month · Future months shown as projected</div>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-sq" style="background:var(--positive)"></div>Income</div>
+        <div class="legend-item"><div class="legend-sq" style="background:var(--negative);opacity:0.75"></div>Spending</div>
+        <div class="legend-item"><div class="legend-sq" style="background:var(--surface-3)"></div>Projected</div>
+      </div>
+    </div>
+
+    <!-- Bar chart: 12 months -->
+    <div style="position:relative;padding-left:36px;">
+      <!-- Y axis labels -->
+      <div style="position:absolute;left:0;top:0;bottom:20px;display:flex;flex-direction:column;justify-content:space-between;width:32px;">
+        <span style="font-size:9px;color:var(--text-disabled);text-align:right">$6k</span>
+        <span style="font-size:9px;color:var(--text-disabled);text-align:right">$4k</span>
+        <span style="font-size:9px;color:var(--text-disabled);text-align:right">$2k</span>
+        <span style="font-size:9px;color:var(--text-disabled);text-align:right">$0</span>
+      </div>
+      <svg width="100%" height="156" viewBox="0 0 960 156" preserveAspectRatio="none">
+        <!-- Grid lines -->
+        <line x1="0" y1="10"  x2="960" y2="10"  stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <line x1="0" y1="43"  x2="960" y2="43"  stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <line x1="0" y1="76"  x2="960" y2="76"  stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <line x1="0" y1="109" x2="960" y2="109" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <!-- Current month highlight column -->
+        <rect x="240" y="0" width="80" rx="0" height="132" fill="rgba(59,130,246,0.04)"/>
+        <!-- JAN: Income $4,800 → h=88, Spend $3,100 → h=57 -->
+        <rect x="10"  y="44"  width="28" height="88" rx="3" fill="#10B981" opacity="0.85"/>
+        <rect x="42"  y="75"  width="28" height="57" rx="3" fill="#F87171" opacity="0.7"/>
+        <!-- FEB: Income $5,000 → h=92, Spend $3,400 → h=62 -->
+        <rect x="90"  y="40"  width="28" height="92" rx="3" fill="#10B981" opacity="0.85"/>
+        <rect x="122" y="70"  width="28" height="62" rx="3" fill="#F87171" opacity="0.7"/>
+        <!-- MAR: Income $5,200 → h=95, Spend $2,900 → h=53 -->
+        <rect x="170" y="37"  width="28" height="95" rx="3" fill="#10B981" opacity="0.85"/>
+        <rect x="202" y="79"  width="28" height="53" rx="3" fill="#F87171" opacity="0.7"/>
+        <!-- APR (current): Income $5,400 → h=99, Spend $3,241 → h=59 — glowing -->
+        <rect x="250" y="33"  width="28" height="99" rx="3" fill="#10B981" filter="url(#glow-g)"/>
+        <rect x="282" y="73"  width="28" height="59" rx="3" fill="#F87171" filter="url(#glow-r)" opacity="0.85"/>
+        <!-- APR label indicator line -->
+        <line x1="265" y1="132" x2="265" y2="136" stroke="#3B82F6" stroke-width="2"/>
+        <!-- MAY–DEC: Future bars (surface-3) -->
+        <rect x="330" y="100" width="28" height="32" rx="3" fill="#1E2A42"/>
+        <rect x="362" y="106" width="28" height="26" rx="3" fill="#1E2A42"/>
+        <rect x="410" y="100" width="28" height="32" rx="3" fill="#1E2A42"/>
+        <rect x="442" y="106" width="28" height="26" rx="3" fill="#1E2A42"/>
+        <rect x="490" y="100" width="28" height="32" rx="3" fill="#1E2A42"/>
+        <rect x="522" y="106" width="28" height="26" rx="3" fill="#1E2A42"/>
+        <rect x="570" y="100" width="28" height="32" rx="3" fill="#1E2A42"/>
+        <rect x="602" y="106" width="28" height="26" rx="3" fill="#1E2A42"/>
+        <rect x="650" y="100" width="28" height="32" rx="3" fill="#1E2A42"/>
+        <rect x="682" y="106" width="28" height="26" rx="3" fill="#1E2A42"/>
+        <rect x="730" y="100" width="28" height="32" rx="3" fill="#1E2A42"/>
+        <rect x="762" y="106" width="28" height="26" rx="3" fill="#1E2A42"/>
+        <rect x="810" y="100" width="28" height="32" rx="3" fill="#1E2A42"/>
+        <rect x="842" y="106" width="28" height="26" rx="3" fill="#1E2A42"/>
+        <rect x="890" y="100" width="28" height="32" rx="3" fill="#1E2A42"/>
+        <rect x="922" y="106" width="28" height="26" rx="3" fill="#1E2A42"/>
+        <!-- Month labels -->
+        <text x="35"  y="148" fill="#475569" font-size="10" text-anchor="middle">Jan</text>
+        <text x="115" y="148" fill="#475569" font-size="10" text-anchor="middle">Feb</text>
+        <text x="195" y="148" fill="#475569" font-size="10" text-anchor="middle">Mar</text>
+        <text x="275" y="148" fill="#3B82F6" font-size="10" font-weight="600" text-anchor="middle">Apr ●</text>
+        <text x="355" y="148" fill="#475569" font-size="10" text-anchor="middle">May</text>
+        <text x="435" y="148" fill="#475569" font-size="10" text-anchor="middle">Jun</text>
+        <text x="515" y="148" fill="#475569" font-size="10" text-anchor="middle">Jul</text>
+        <text x="595" y="148" fill="#475569" font-size="10" text-anchor="middle">Aug</text>
+        <text x="675" y="148" fill="#475569" font-size="10" text-anchor="middle">Sep</text>
+        <text x="755" y="148" fill="#475569" font-size="10" text-anchor="middle">Oct</text>
+        <text x="835" y="148" fill="#475569" font-size="10" text-anchor="middle">Nov</text>
+        <text x="915" y="148" fill="#475569" font-size="10" text-anchor="middle">Dec</text>
+        <defs>
+          <filter id="glow-g"><feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/><feFlood flood-color="#10B981" flood-opacity="0.4" result="color"/><feComposite in="color" in2="blur" operator="in" result="shadow"/><feComposite in="SourceGraphic" in2="shadow" operator="over"/></filter>
+          <filter id="glow-r"><feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/><feFlood flood-color="#F87171" flood-opacity="0.3" result="color"/><feComposite in="color" in2="blur" operator="in" result="shadow"/><feComposite in="SourceGraphic" in2="shadow" operator="over"/></filter>
+        </defs>
+      </svg>
+    </div>
+  </div>
+
+  <!-- MONTH-BY-MONTH TABLE -->
+  <div class="table-card">
+    <div class="table-header-row">
+      <div class="table-title">Month-by-Month Breakdown</div>
+      <div class="table-actions">
+        <button class="btn btn-ghost">Export</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:200px">Month</th>
+          <th>Income</th>
+          <th>Spending</th>
+          <th>Profit / Loss</th>
+          <th>Savings Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- JAN -->
+        <tr>
+          <td>
+            <div class="month-cell">
+              <div class="month-dot" style="background:var(--positive)"></div>
+              <span class="month-name">January</span>
+            </div>
+          </td>
+          <td style="color:var(--positive)">$4,800</td>
+          <td style="color:var(--negative)">$3,100</td>
+          <td><span class="profit-pill good">↑ +$1,700</span></td>
+          <td style="color:var(--text-muted)">35%</td>
+        </tr>
+
+        <!-- FEB -->
+        <tr>
+          <td>
+            <div class="month-cell">
+              <div class="month-dot" style="background:var(--positive)"></div>
+              <span class="month-name">February</span>
+            </div>
+          </td>
+          <td style="color:var(--positive)">$5,000</td>
+          <td style="color:var(--negative)">$3,400</td>
+          <td><span class="profit-pill good">↑ +$1,600</span></td>
+          <td style="color:var(--text-muted)">32%</td>
+        </tr>
+
+        <!-- MAR -->
+        <tr>
+          <td>
+            <div class="month-cell">
+              <div class="month-dot" style="background:var(--positive)"></div>
+              <span class="month-name">March</span>
+            </div>
+          </td>
+          <td style="color:var(--positive)">$5,200</td>
+          <td style="color:var(--negative)">$2,900</td>
+          <td><span class="profit-pill great">↑ +$2,300</span></td>
+          <td style="color:var(--positive)">44%</td>
+        </tr>
+
+        <!-- APR (current) -->
+        <tr class="current-month">
+          <td>
+            <div class="month-cell">
+              <div class="month-dot" style="background:var(--blue)"></div>
+              <span class="month-name">April</span>
+              <span class="month-badge">Current</span>
+            </div>
+          </td>
+          <td style="color:var(--positive)">$5,400</td>
+          <td style="color:var(--negative)">$3,241</td>
+          <td><span class="profit-pill great">↑ +$2,159</span></td>
+          <td style="color:var(--positive)">40%</td>
+        </tr>
+
+        <!-- MAY–DEC (future) -->
+        <tr class="future-month">
+          <td><div class="month-cell"><div class="month-dot" style="background:var(--surface-3)"></div><span class="month-name">May</span></div></td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td><span class="profit-pill none">No data</span></td>
+          <td style="color:var(--text-disabled)">—</td>
+        </tr>
+        <tr class="future-month">
+          <td><div class="month-cell"><div class="month-dot" style="background:var(--surface-3)"></div><span class="month-name">June</span></div></td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td><span class="profit-pill none">No data</span></td>
+          <td style="color:var(--text-disabled)">—</td>
+        </tr>
+        <tr class="future-month">
+          <td><div class="month-cell"><div class="month-dot" style="background:var(--surface-3)"></div><span class="month-name">July</span></div></td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td><span class="profit-pill none">No data</span></td>
+          <td style="color:var(--text-disabled)">—</td>
+        </tr>
+        <tr class="future-month">
+          <td><div class="month-cell"><div class="month-dot" style="background:var(--surface-3)"></div><span class="month-name">August</span></div></td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td><span class="profit-pill none">No data</span></td>
+          <td style="color:var(--text-disabled)">—</td>
+        </tr>
+        <tr class="future-month">
+          <td><div class="month-cell"><div class="month-dot" style="background:var(--surface-3)"></div><span class="month-name">September</span></div></td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td><span class="profit-pill none">No data</span></td>
+          <td style="color:var(--text-disabled)">—</td>
+        </tr>
+        <tr class="future-month">
+          <td><div class="month-cell"><div class="month-dot" style="background:var(--surface-3)"></div><span class="month-name">October</span></div></td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td><span class="profit-pill none">No data</span></td>
+          <td style="color:var(--text-disabled)">—</td>
+        </tr>
+        <tr class="future-month">
+          <td><div class="month-cell"><div class="month-dot" style="background:var(--surface-3)"></div><span class="month-name">November</span></div></td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td><span class="profit-pill none">No data</span></td>
+          <td style="color:var(--text-disabled)">—</td>
+        </tr>
+        <tr class="future-month">
+          <td><div class="month-cell"><div class="month-dot" style="background:var(--surface-3)"></div><span class="month-name">December</span></div></td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td style="color:var(--text-disabled)">—</td>
+          <td><span class="profit-pill none">No data</span></td>
+          <td style="color:var(--text-disabled)">—</td>
+        </tr>
+
+      </tbody>
+      <tfoot>
+        <tr>
+          <td style="font-size:12px;color:var(--text-muted);font-family:'Source Sans 3',sans-serif;font-weight:600;letter-spacing:0.05em;text-transform:uppercase">
+            Year to Date
+          </td>
+          <td style="color:var(--positive)">$20,400</td>
+          <td style="color:var(--negative)">$12,641</td>
+          <td><span class="profit-pill great" style="font-size:14px;padding:4px 12px">↑ +$7,759</span></td>
+          <td style="color:var(--positive)">38%</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+</main>
+</body>
+</html>

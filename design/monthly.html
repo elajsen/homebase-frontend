@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clarity — Monthly Snapshot</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0B1120; --surface-1: #131D2E; --surface-2: #192134; --surface-3: #1E2A42;
+  --text-primary: #F1F5F9; --text-secondary: #CBD5E1; --text-muted: #94A3B8; --text-disabled: #475569;
+  --blue: #3B82F6; --blue-dim: rgba(59,130,246,0.12); --blue-border: rgba(59,130,246,0.28);
+  --positive: #10B981; --positive-dim: rgba(16,185,129,0.12); --positive-border: rgba(16,185,129,0.25);
+  --negative: #F87171; --negative-dim: rgba(248,113,113,0.12);
+  --warning: #F59E0B; --warning-dim: rgba(245,158,11,0.12);
+  --danger: #EF4444; --danger-dim: rgba(239,68,68,0.12);
+  --border: rgba(255,255,255,0.07); --border-strong: rgba(255,255,255,0.13);
+  --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 18px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family:'Source Sans 3',sans-serif; background:var(--bg); color:var(--text-primary); min-height:100vh; -webkit-font-smoothing:antialiased; }
+nav {
+  position:sticky; top:0; z-index:50;
+  background:rgba(19,29,46,0.92); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border); height:58px;
+  display:flex; align-items:center; justify-content:space-between; padding:0 40px;
+}
+.nav-brand { font-family:'Lexend',sans-serif; font-size:17px; font-weight:600;
+  background:linear-gradient(135deg,#93C5FD,#3B82F6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.nav-links { display:flex; gap:2px; }
+.nav-links a { font-size:14px; font-weight:500; color:var(--text-muted); text-decoration:none; padding:6px 16px; border-radius:var(--r-sm); transition:all 0.15s; }
+.nav-links a:hover { color:var(--text-primary); background:var(--surface-2); }
+.nav-links a.active { color:var(--blue); background:var(--blue-dim); }
+.nav-right { display:flex; align-items:center; gap:12px; }
+.nav-date { font-size:12px; color:var(--text-disabled); }
+.nav-avatar { width:32px; height:32px; border-radius:10px; background:linear-gradient(135deg,#1E40AF,#3B82F6); display:flex; align-items:center; justify-content:center; font-family:'Lexend',sans-serif; font-size:12px; font-weight:600; color:#fff; }
+.page { max-width:1100px; margin:0 auto; padding:32px 32px 64px; }
+
+/* PAGE HEADER */
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; }
+.month-nav { display:flex; align-items:center; gap:16px; }
+.month-nav-btn {
+  width:34px; height:34px; border-radius:var(--r-md); border:1px solid var(--border-strong);
+  background:var(--surface-2); color:var(--text-muted); display:flex; align-items:center;
+  justify-content:center; cursor:pointer; font-size:14px; transition:all 0.15s;
+}
+.month-nav-btn:hover { color:var(--text-primary); background:var(--surface-3); }
+.month-title { font-family:'Lexend',sans-serif; font-size:26px; font-weight:600; letter-spacing:-0.02em; }
+.month-sub { font-size:13px; color:var(--text-muted); margin-top:2px; }
+.header-actions { display:flex; gap:10px; }
+
+/* SUMMARY ROW */
+.summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+.summary-card {
+  background:var(--surface-1); border:1px solid var(--border); border-radius:var(--r-xl);
+  padding:20px 22px; position:relative; overflow:hidden;
+}
+.summary-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; border-radius:var(--r-xl) var(--r-xl) 0 0; }
+.summary-card.green::before { background:linear-gradient(90deg,var(--positive),transparent); }
+.summary-card.red::before   { background:linear-gradient(90deg,var(--negative),transparent); }
+.summary-card.blue::before  { background:linear-gradient(90deg,var(--blue),transparent); }
+.summary-card.amber::before { background:linear-gradient(90deg,var(--warning),transparent); }
+.sum-label { font-size:11px; font-weight:600; color:var(--text-muted); letter-spacing:0.07em; text-transform:uppercase; margin-bottom:8px; }
+.sum-value { font-family:'Lexend',sans-serif; font-size:24px; font-weight:600; letter-spacing:-0.03em; font-variant-numeric:tabular-nums; margin-bottom:6px; }
+.sum-sub { font-size:12px; color:var(--text-muted); }
+/* Savings goal editable */
+.sum-input-wrap { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+.sum-input-prefix { font-family:'Lexend',sans-serif; font-size:22px; font-weight:600; color:var(--warning); }
+.sum-input {
+  font-family:'Lexend',sans-serif; font-size:22px; font-weight:600; color:var(--warning);
+  background:transparent; border:none; outline:none; letter-spacing:-0.02em;
+  font-variant-numeric:tabular-nums; width:90px;
+  border-bottom:1px dashed rgba(245,158,11,0.4); padding-bottom:1px;
+}
+.sum-input:focus { border-bottom-color:var(--warning); }
+.sum-edit-hint { font-size:11px; color:var(--text-disabled); margin-top:2px; }
+
+/* WEEKS SECTION */
+.weeks-label { font-size:11px; font-weight:600; color:var(--text-muted); letter-spacing:0.07em; text-transform:uppercase; margin-bottom:12px; }
+.weeks-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:26px; }
+.week-card {
+  background:var(--surface-1); border:1px solid var(--border); border-radius:var(--r-xl);
+  padding:18px 16px; position:relative; overflow:hidden;
+}
+.week-card.current {
+  border-color:rgba(59,130,246,0.3);
+  box-shadow:0 0 16px rgba(59,130,246,0.08);
+}
+.week-card.current::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--blue); }
+.week-card.upcoming { opacity:0.5; }
+.week-header { margin-bottom:14px; }
+.week-num { font-family:'Lexend',sans-serif; font-size:11px; font-weight:600; color:var(--text-muted); letter-spacing:0.06em; text-transform:uppercase; }
+.week-dates { font-size:12px; color:var(--text-disabled); margin-top:1px; }
+.week-badge {
+  display:inline-flex; font-size:10px; font-weight:600; padding:2px 7px; border-radius:10px; margin-top:4px;
+}
+.week-badge.done    { background:rgba(16,185,129,0.1); color:var(--positive); }
+.week-badge.active  { background:var(--blue-dim); color:var(--blue); }
+.week-badge.upcoming{ background:rgba(148,163,184,0.1); color:var(--text-muted); }
+.week-stats { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+.week-stat { display:flex; justify-content:space-between; align-items:center; }
+.week-stat-label { font-size:11px; color:var(--text-muted); }
+.week-stat-val { font-family:'Lexend',sans-serif; font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; }
+/* Mini bar chart in week card */
+.week-mini-chart { display:flex; align-items:flex-end; gap:3px; height:32px; margin-top:8px; }
+.mini-bar { border-radius:2px 2px 0 0; flex:1; }
+/* Days remaining */
+.days-row { display:flex; align-items:center; justify-content:space-between; padding-top:10px; border-top:1px solid var(--border); margin-top:8px; }
+.days-label { font-size:11px; color:var(--text-muted); }
+.days-val { font-family:'Lexend',sans-serif; font-size:12px; font-weight:600; color:var(--text-secondary); }
+.days-progress { flex:1; height:3px; background:rgba(255,255,255,0.06); border-radius:2px; margin:0 8px; }
+.days-fill { height:3px; border-radius:2px; background:var(--blue); }
+
+/* BILLS SECTION */
+.bills-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.bills-card { background:var(--surface-1); border:1px solid var(--border); border-radius:var(--r-xl); overflow:hidden; }
+.bills-header {
+  padding:16px 20px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.bills-title { font-family:'Lexend',sans-serif; font-size:14px; font-weight:600; color:var(--text-primary); }
+.bills-count { font-size:12px; font-weight:600; padding:2px 8px; border-radius:20px; }
+.bills-count.paid     { background:var(--positive-dim); color:var(--positive); }
+.bills-count.upcoming { background:var(--warning-dim); color:var(--warning); }
+.bill-item {
+  display:flex; align-items:center; gap:12px; padding:12px 20px;
+  border-bottom:1px solid var(--border); transition:background 0.12s; cursor:pointer;
+}
+.bill-item:last-child { border-bottom:none; }
+.bill-item:hover { background:var(--surface-2); }
+.bill-icon { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; background:var(--surface-2); }
+.bill-info { flex:1; }
+.bill-name { font-size:13px; font-weight:500; color:var(--text-primary); }
+.bill-date { font-size:11px; color:var(--text-muted); margin-top:1px; }
+.bill-right { text-align:right; flex-shrink:0; }
+.bill-amount { font-family:'Lexend',sans-serif; font-size:14px; font-weight:600; font-variant-numeric:tabular-nums; }
+.bill-status { margin-top:2px; }
+.bill-check { font-size:11px; color:var(--positive); }
+.bill-due { font-size:11px; color:var(--text-muted); }
+/* Bill totals row */
+.bills-total {
+  padding:12px 20px; background:var(--surface-2);
+  display:flex; justify-content:space-between; align-items:center;
+  border-top:1px solid var(--border);
+}
+.bills-total-label { font-size:12px; color:var(--text-muted); }
+.bills-total-val { font-family:'Lexend',sans-serif; font-size:15px; font-weight:600; font-variant-numeric:tabular-nums; }
+
+/* BTN */
+.btn { display:inline-flex; align-items:center; gap:6px; font-family:'Lexend',sans-serif; font-size:13px; font-weight:500; border:none; border-radius:var(--r-md); padding:8px 16px; cursor:pointer; }
+.btn-ghost { background:var(--surface-2); color:var(--text-secondary); border:1px solid var(--border-strong); }
+.btn-primary { background:var(--blue); color:#fff; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">Clarity</div>
+  <div class="nav-links">
+    <a href="home.html">Home</a>
+    <a href="monthly.html" class="active">Monthly</a>
+    <a href="yearly.html">Yearly</a>
+  </div>
+  <div class="nav-right">
+    <span class="nav-date">April 4, 2026</span>
+    <div class="nav-avatar">JD</div>
+  </div>
+</nav>
+
+<main class="page">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="month-nav">
+      <button class="month-nav-btn">←</button>
+      <div>
+        <div class="month-title">April 2026</div>
+        <div class="month-sub">Monthly snapshot · 4 days complete</div>
+      </div>
+      <button class="month-nav-btn" style="opacity:0.3;cursor:default">→</button>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost">Export PDF</button>
+      <a href="transactions-option-a.html" class="btn btn-ghost" style="text-decoration:none;">Transactions →</a>
+      <button class="btn btn-primary">+ Add Transaction</button>
+    </div>
+  </div>
+
+  <!-- SUMMARY ROW -->
+  <div class="summary-grid">
+    <div class="summary-card green">
+      <div class="sum-label">Total Income</div>
+      <div class="sum-value" style="color:var(--positive)">$5,400</div>
+      <div class="sum-sub" style="color:var(--positive);opacity:0.7">↑ $400 vs March</div>
+    </div>
+    <div class="summary-card red">
+      <div class="sum-label">Total Spending</div>
+      <div class="sum-value" style="color:var(--negative)">$3,241</div>
+      <div class="sum-sub" style="color:var(--negative);opacity:0.7">↑ $341 vs March</div>
+    </div>
+    <div class="summary-card amber">
+      <div class="sum-label">Savings Goal <span style="font-size:10px;font-weight:400;color:var(--text-disabled);letter-spacing:0">(editable)</span></div>
+      <div class="sum-input-wrap">
+        <span class="sum-input-prefix">$</span>
+        <input class="sum-input" type="number" id="savings-input" value="1500" min="0" max="9999" step="50">
+      </div>
+      <div class="sum-edit-hint">✎ Click to change goal</div>
+    </div>
+    <div class="summary-card blue">
+      <div class="sum-label">Remaining Budget</div>
+      <div class="sum-value" id="remaining-val" style="color:var(--blue)">$659</div>
+      <div class="sum-sub" id="remaining-sub">After saving $1,500 goal</div>
+    </div>
+  </div>
+
+  <!-- WEEK BY WEEK -->
+  <div class="weeks-label">Week by Week</div>
+  <div class="weeks-grid">
+
+    <!-- Week 1 -->
+    <div class="week-card">
+      <div class="week-header">
+        <div class="week-num">Week 1</div>
+        <div class="week-dates">Apr 1 – 7</div>
+        <div class="week-badge done">✓ Complete</div>
+      </div>
+      <div class="week-stats">
+        <div class="week-stat">
+          <span class="week-stat-label">Income</span>
+          <span class="week-stat-val" style="color:var(--positive)">+$4,200</span>
+        </div>
+        <div class="week-stat">
+          <span class="week-stat-label">Spending</span>
+          <span class="week-stat-val" style="color:var(--negative)">−$780</span>
+        </div>
+        <div class="week-stat">
+          <span class="week-stat-label">Net</span>
+          <span class="week-stat-val" style="color:var(--blue)">+$3,420</span>
+        </div>
+      </div>
+      <div class="week-mini-chart">
+        <div class="mini-bar" style="height:80%;background:var(--positive);opacity:0.8"></div>
+        <div class="mini-bar" style="height:19%;background:var(--negative);opacity:0.7"></div>
+      </div>
+      <div class="days-row">
+        <span class="days-label">Days</span>
+        <div class="days-progress"><div class="days-fill" style="width:100%"></div></div>
+        <span class="days-val">7/7</span>
+      </div>
+    </div>
+
+    <!-- Week 2 -->
+    <div class="week-card">
+      <div class="week-header">
+        <div class="week-num">Week 2</div>
+        <div class="week-dates">Apr 8 – 14</div>
+        <div class="week-badge done">✓ Complete</div>
+      </div>
+      <div class="week-stats">
+        <div class="week-stat">
+          <span class="week-stat-label">Income</span>
+          <span class="week-stat-val" style="color:var(--text-muted)">—</span>
+        </div>
+        <div class="week-stat">
+          <span class="week-stat-label">Spending</span>
+          <span class="week-stat-val" style="color:var(--negative)">−$920</span>
+        </div>
+        <div class="week-stat">
+          <span class="week-stat-label">Running</span>
+          <span class="week-stat-val" style="color:var(--blue)">$2,500</span>
+        </div>
+      </div>
+      <div class="week-mini-chart">
+        <div class="mini-bar" style="height:4%;background:var(--positive);opacity:0.3"></div>
+        <div class="mini-bar" style="height:22%;background:var(--negative);opacity:0.7"></div>
+      </div>
+      <div class="days-row">
+        <span class="days-label">Days</span>
+        <div class="days-progress"><div class="days-fill" style="width:100%"></div></div>
+        <span class="days-val">7/7</span>
+      </div>
+    </div>
+
+    <!-- Week 3 -->
+    <div class="week-card current">
+      <div class="week-header">
+        <div class="week-num">Week 3</div>
+        <div class="week-dates">Apr 15 – 21</div>
+        <div class="week-badge active">● In Progress</div>
+      </div>
+      <div class="week-stats">
+        <div class="week-stat">
+          <span class="week-stat-label">Income</span>
+          <span class="week-stat-val" style="color:var(--positive)">+$1,200</span>
+        </div>
+        <div class="week-stat">
+          <span class="week-stat-label">Spending</span>
+          <span class="week-stat-val" style="color:var(--negative)">−$1,050</span>
+        </div>
+        <div class="week-stat">
+          <span class="week-stat-label">Running</span>
+          <span class="week-stat-val" style="color:var(--blue)">$2,650</span>
+        </div>
+      </div>
+      <div class="week-mini-chart">
+        <div class="mini-bar" style="height:23%;background:var(--positive);opacity:0.8"></div>
+        <div class="mini-bar" style="height:25%;background:var(--negative);opacity:0.7"></div>
+      </div>
+      <div class="days-row">
+        <span class="days-label">Days</span>
+        <div class="days-progress"><div class="days-fill" style="width:57%"></div></div>
+        <span class="days-val" style="color:var(--blue)">4 left</span>
+      </div>
+    </div>
+
+    <!-- Week 4 -->
+    <div class="week-card upcoming">
+      <div class="week-header">
+        <div class="week-num">Week 4</div>
+        <div class="week-dates">Apr 22 – 28</div>
+        <div class="week-badge upcoming">Upcoming</div>
+      </div>
+      <div class="week-stats">
+        <div class="week-stat">
+          <span class="week-stat-label">Income</span>
+          <span class="week-stat-val" style="color:var(--text-disabled)">—</span>
+        </div>
+        <div class="week-stat">
+          <span class="week-stat-label">Spending</span>
+          <span class="week-stat-val" style="color:var(--text-disabled)">—</span>
+        </div>
+        <div class="week-stat">
+          <span class="week-stat-label">Running</span>
+          <span class="week-stat-val" style="color:var(--text-disabled)">—</span>
+        </div>
+      </div>
+      <div class="week-mini-chart">
+        <div class="mini-bar" style="height:6%;background:var(--surface-3)"></div>
+        <div class="mini-bar" style="height:6%;background:var(--surface-3)"></div>
+      </div>
+      <div class="days-row">
+        <span class="days-label">Days</span>
+        <div class="days-progress"><div class="days-fill" style="width:0%"></div></div>
+        <span class="days-val">7 left</span>
+      </div>
+    </div>
+
+    <!-- Week 5 -->
+    <div class="week-card upcoming">
+      <div class="week-header">
+        <div class="week-num">Week 5</div>
+        <div class="week-dates">Apr 29 – 30</div>
+        <div class="week-badge upcoming">Upcoming</div>
+      </div>
+      <div class="week-stats">
+        <div class="week-stat">
+          <span class="week-stat-label">Income</span>
+          <span class="week-stat-val" style="color:var(--text-disabled)">—</span>
+        </div>
+        <div class="week-stat">
+          <span class="week-stat-label">Spending</span>
+          <span class="week-stat-val" style="color:var(--text-disabled)">—</span>
+        </div>
+        <div class="week-stat">
+          <span class="week-stat-label">Running</span>
+          <span class="week-stat-val" style="color:var(--text-disabled)">—</span>
+        </div>
+      </div>
+      <div class="week-mini-chart">
+        <div class="mini-bar" style="height:6%;background:var(--surface-3)"></div>
+        <div class="mini-bar" style="height:6%;background:var(--surface-3)"></div>
+      </div>
+      <div class="days-row">
+        <span class="days-label">Days</span>
+        <div class="days-progress"><div class="days-fill" style="width:0%"></div></div>
+        <span class="days-val">2 left</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BILLS -->
+  <div class="weeks-label">Bills</div>
+  <div class="bills-grid">
+
+    <!-- PAID BILLS -->
+    <div class="bills-card">
+      <div class="bills-header">
+        <div class="bills-title">Paid</div>
+        <span class="bills-count paid">4 paid</span>
+      </div>
+
+      <div class="bill-item">
+        <div class="bill-icon">🏠</div>
+        <div class="bill-info">
+          <div class="bill-name">Rent</div>
+          <div class="bill-date">Paid Apr 1, 2026</div>
+        </div>
+        <div class="bill-right">
+          <div class="bill-amount" style="color:var(--text-secondary)">$1,450.00</div>
+          <div class="bill-status"><span class="bill-check">✓ Paid</span></div>
+        </div>
+      </div>
+
+      <div class="bill-item">
+        <div class="bill-icon">📺</div>
+        <div class="bill-info">
+          <div class="bill-name">Netflix</div>
+          <div class="bill-date">Paid Apr 1, 2026</div>
+        </div>
+        <div class="bill-right">
+          <div class="bill-amount" style="color:var(--text-secondary)">$15.99</div>
+          <div class="bill-status"><span class="bill-check">✓ Paid</span></div>
+        </div>
+      </div>
+
+      <div class="bill-item">
+        <div class="bill-icon">🌐</div>
+        <div class="bill-info">
+          <div class="bill-name">Internet</div>
+          <div class="bill-date">Paid Apr 2, 2026</div>
+        </div>
+        <div class="bill-right">
+          <div class="bill-amount" style="color:var(--text-secondary)">$65.00</div>
+          <div class="bill-status"><span class="bill-check">✓ Paid</span></div>
+        </div>
+      </div>
+
+      <div class="bill-item">
+        <div class="bill-icon">🎵</div>
+        <div class="bill-info">
+          <div class="bill-name">Spotify</div>
+          <div class="bill-date">Paid Apr 2, 2026</div>
+        </div>
+        <div class="bill-right">
+          <div class="bill-amount" style="color:var(--text-secondary)">$9.99</div>
+          <div class="bill-status"><span class="bill-check">✓ Paid</span></div>
+        </div>
+      </div>
+
+      <div class="bills-total">
+        <span class="bills-total-label">Total paid</span>
+        <span class="bills-total-val" style="color:var(--positive)">$1,540.98</span>
+      </div>
+    </div>
+
+    <!-- REMAINING BILLS -->
+    <div class="bills-card">
+      <div class="bills-header">
+        <div class="bills-title">Remaining</div>
+        <span class="bills-count upcoming">4 upcoming</span>
+      </div>
+
+      <div class="bill-item">
+        <div class="bill-icon">🛡️</div>
+        <div class="bill-info">
+          <div class="bill-name">Insurance</div>
+          <div class="bill-date">Due Apr 15, 2026</div>
+        </div>
+        <div class="bill-right">
+          <div class="bill-amount" style="color:var(--text-primary)">$124.00</div>
+          <div class="bill-status"><span class="bill-due" style="color:var(--blue)">Due in 11 days</span></div>
+        </div>
+      </div>
+
+      <div class="bill-item">
+        <div class="bill-icon">📱</div>
+        <div class="bill-info">
+          <div class="bill-name">Phone Bill</div>
+          <div class="bill-date">Due Apr 20, 2026</div>
+        </div>
+        <div class="bill-right">
+          <div class="bill-amount" style="color:var(--text-primary)">$85.00</div>
+          <div class="bill-status"><span class="bill-due" style="color:var(--text-muted)">Due in 16 days</span></div>
+        </div>
+      </div>
+
+      <div class="bill-item">
+        <div class="bill-icon">⚡</div>
+        <div class="bill-info">
+          <div class="bill-name">Electricity</div>
+          <div class="bill-date">Due Apr 25, 2026</div>
+        </div>
+        <div class="bill-right">
+          <div class="bill-amount" style="color:var(--text-primary)">$95.00</div>
+          <div class="bill-status"><span class="bill-due" style="color:var(--text-muted)">Due in 21 days</span></div>
+        </div>
+      </div>
+
+      <div class="bill-item">
+        <div class="bill-icon">📦</div>
+        <div class="bill-info">
+          <div class="bill-name">Amazon Prime</div>
+          <div class="bill-date">Due Apr 28, 2026</div>
+        </div>
+        <div class="bill-right">
+          <div class="bill-amount" style="color:var(--text-primary)">$15.99</div>
+          <div class="bill-status"><span class="bill-due" style="color:var(--text-muted)">Due in 24 days</span></div>
+        </div>
+      </div>
+
+      <div class="bills-total">
+        <span class="bills-total-label">Total remaining</span>
+        <span class="bills-total-val" style="color:var(--warning)">$319.99</span>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<script>
+  const INCOME = 5400;
+  const SPENDING = 3241;
+
+  const input = document.getElementById('savings-input');
+  const remainingVal = document.getElementById('remaining-val');
+  const remainingSub = document.getElementById('remaining-sub');
+
+  function formatCurrency(n) {
+    return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+
+  function update() {
+    const goal = parseFloat(input.value) || 0;
+    const remaining = INCOME - SPENDING - goal;
+    remainingVal.textContent = (remaining < 0 ? '−' : '') + formatCurrency(remaining);
+    remainingSub.textContent = 'After saving ' + formatCurrency(goal) + ' goal';
+    if (remaining < 0) {
+      remainingVal.style.color = 'var(--negative)';
+    } else if (remaining < 300) {
+      remainingVal.style.color = 'var(--warning)';
+    } else {
+      remainingVal.style.color = 'var(--blue)';
+    }
+  }
+
+  input.addEventListener('input', update);
+  update();
+</script>
+</body>
+</html>
